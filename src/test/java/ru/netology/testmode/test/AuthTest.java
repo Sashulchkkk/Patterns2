@@ -9,6 +9,11 @@ import static ru.netology.testmode.data.DataGenerator.Registration.getRegistered
 import static ru.netology.testmode.data.DataGenerator.Registration.getUser;
 import static ru.netology.testmode.data.DataGenerator.getRandomLogin;
 import static ru.netology.testmode.data.DataGenerator.getRandomPassword;
+import static com.codeborne.selenide.Condition.*;
+import static com.codeborne.selenide.Selectors.byText;
+import static com.codeborne.selenide.Selectors.withText;
+import static com.codeborne.selenide.Selenide.*;
+import com.codeborne.selenide.Condition;
 
 class AuthTest {
 
@@ -24,6 +29,10 @@ class AuthTest {
         // TODO: добавить логику теста, в рамках которого будет выполнена попытка входа в личный кабинет с учётными
         //  данными зарегистрированного активного пользователя, для заполнения полей формы используйте
         //  пользователя registeredUser
+        $("[data-test-id=login] .input__box .input__control").val(registeredUser.getLogin());
+        $("[data-test-id=password] .input__box .input__control").val(registeredUser.getPassword());
+        $("[data-test-id=action-login]").click();
+        $("h2").shouldHave(Condition.exactText("  Личный кабинет"));
     }
 
     @Test
@@ -32,6 +41,10 @@ class AuthTest {
         var notRegisteredUser = getUser("active");
         // TODO: добавить логику теста в рамках которого будет выполнена попытка входа в личный кабинет
         //  незарегистрированного пользователя, для заполнения полей формы используйте пользователя notRegisteredUser
+        $("[data-test-id=login] .input__box .input__control").val(notRegisteredUser.getLogin());
+        $("[data-test-id=password] .input__box .input__control").val(notRegisteredUser.getPassword());
+        $("[data-test-id=action-login]").click();
+        $("[data-test-id=error-notification] .notification__content").shouldHave(Condition.exactText("Ошибка! " + "Неверно указан логин или пароль"));
     }
 
     @Test
@@ -40,6 +53,10 @@ class AuthTest {
         var blockedUser = getRegisteredUser("blocked");
         // TODO: добавить логику теста в рамках которого будет выполнена попытка входа в личный кабинет,
         //  заблокированного пользователя, для заполнения полей формы используйте пользователя blockedUser
+        $("[data-test-id=login] .input__box .input__control").val(blockedUser.getLogin());
+        $("[data-test-id=password] .input__box .input__control").val(blockedUser.getPassword());
+        $("[data-test-id=action-login]").click();
+        $("[data-test-id=error-notification] .notification__content").shouldHave(Condition.exactText("Ошибка! " + "Пользователь заблокирован"));
     }
 
     @Test
@@ -50,6 +67,10 @@ class AuthTest {
         // TODO: добавить логику теста в рамках которого будет выполнена попытка входа в личный кабинет с неверным
         //  логином, для заполнения поля формы "Логин" используйте переменную wrongLogin,
         //  "Пароль" - пользователя registeredUser
+        $("[data-test-id=login] .input__box .input__control").val(wrongLogin);
+        $("[data-test-id=password] .input__box .input__control").val(registeredUser.getPassword());
+        $("[data-test-id=action-login]").click();
+        $("[data-test-id=error-notification] .notification__content").shouldHave(Condition.exactText("Ошибка! " + "Неверно указан логин или пароль"));
     }
 
     @Test
@@ -60,5 +81,19 @@ class AuthTest {
         // TODO: добавить логику теста в рамках которого будет выполнена попытка входа в личный кабинет с неверным
         //  паролем, для заполнения поля формы "Логин" используйте пользователя registeredUser,
         //  "Пароль" - переменную wrongPassword
+        $("[data-test-id=login] .input__box .input__control").val(registeredUser.getLogin());
+        $("[data-test-id=password] .input__box .input__control").val(wrongPassword);
+        $("[data-test-id=action-login]").click();
+        $("[data-test-id=error-notification] .notification__content").shouldHave(Condition.exactText("Ошибка! " + "Неверно указан логин или пароль"));
+    }
+
+    @Test
+    @DisplayName("Should get error message if login with blocked unregistered user")
+    void shouldGetErrorIfNotRegisteredBlockedUser() {
+        var blockedUser = getUser("blocked");
+        $("[data-test-id=login] .input__box .input__control").val(blockedUser.getLogin());
+        $("[data-test-id=password] .input__box .input__control").val(blockedUser.getPassword());
+        $("[data-test-id=action-login]").click();
+        $("[data-test-id=error-notification] .notification__content").shouldHave(Condition.exactText("Ошибка! " + "Неверно указан логин или пароль"));
     }
 }
